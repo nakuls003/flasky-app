@@ -8,14 +8,15 @@ class Config:
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.googlemail.com'
     MAIL_PORT = os.environ.get('MAIL_PORT') or 587
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ('true', '1', 'on')
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'nakuls1990'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'nakultest003'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    FLASKY_MAIL_SENDER = os.environ.get('FLASKY_MAIL_SENDER') or 'nakuls1990@gmail.com'
+    FLASKY_MAIL_SENDER = os.environ.get('FLASKY_MAIL_SENDER') or 'nakultest003@gmail.com'
     POSTS_PER_PAGE = 10
     FOLLOW_RESULTS_PER_PAGE = 30
     COMMENTS_PER_PAGE = 10
     SQLALCHEMY_RECORD_QUERIES = True
     SLOW_DB_QUERY_TIME = 0.5
+    SSL_REDIRECT = False
 
     @classmethod
     def init_app(cls, app):
@@ -60,9 +61,27 @@ class ProductionConfig(Config):
         app.logger.addHandler(mail_handler)
 
 
+class HerokuConfig(ProductionConfig):
+    SSL_REDIRECT = True if os.environ.get('DYNO') else False
+
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+        import logging
+        from logging import StreamHandler
+
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
+
 config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
-    'default': DevelopmentConfig
+    'default': DevelopmentConfig,
+    'heroku': HerokuConfig
 }

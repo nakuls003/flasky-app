@@ -1,0 +1,13 @@
+*.py[cod]
+
+.idea
+
+# SQLite databases
+*.sqlite
+
+# Virtual environment
+venv
+
+# Environment files
+.env
+.env-mysql
